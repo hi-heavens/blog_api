@@ -1,0 +1,16 @@
+[
+    {
+        "title": "How to Use JavaScript some Method",
+        "description": "JavaScript some() With thisArg Argument",
+        "author": "Abdullah Numan",
+        "state": "draft",
+        "tags": [
+            "JavaScript",
+            "Web Development",
+            "Programming Blogs",
+            "Beginner Developers",
+            "Tutorial"
+        ],
+        "body": "When you are developing a domain model, you want it to be as concise as possible - only containing abstractions related to the problem you are trying to model. This, however, can become an impediment if you want to expose a search engine where you can input any string, and gets any match back, even on information that is only indirectly related to your model - How do your service know if a match exists, if the info isn't directly stored in your domain model?\nThis exact case was something we experienced at my prior place of employment, and a coworker(I miss you!) and I came up with a great solution. I'll eventually reuse it in my Kanban project project, and wanted to explain how it works.\n\nI want to be able to search for one or more search terms and get Cards back that match the search terms.\nOne might search for word(s) that is contained in the title of the card. This is easy to implement, as title is part of our domain - our API will simply return any matches that contain that string. What if we want to search for the name of the author? Our system is going to use a third-party authorization provider. That means the microservice won't actually know the name of the author. They'll simply know that the author is user with id 75adff81-269e-412c-a1c8-fbbfb998b5e8.\nYou could simply argue \"Well maybe the author's name is part of the domain model!\". But where does that logic end? We'll quickly have to model things only indirectly related. What if we create custom integrations with different version control systems, and want to enable searching on pull-request names (or descriptions)? Are they then also part of the domain? Suddenly your domain is growing and coupled with the models of third-party systems. More coupling. More to maintain.\nvery simple domain model simply containing a card with a title, description and author identifier\nWhen i search for a full or subpart of an author's name, or part of a title, I want all cards that match all query terms, so I can find the cards i am looking for."
+    }
+]

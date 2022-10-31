@@ -25,7 +25,11 @@ const articleSchema = new mongoose.Schema({
     },
     timestamp: {
         type: Date,
-        default: Date.now 
+        default: Date.now() 
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 });
 
@@ -36,8 +40,11 @@ const getReadingTime = (body) => {
     return readingTime;
 };
 
+// const readCount = () => this.read_count + 1;
+
 articleSchema.pre('save', function(next) {
     this.reading_time = getReadingTime(this.body);
+    this.read_count + 1;
     next();
 });
 
