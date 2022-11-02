@@ -6,6 +6,8 @@ const service = require('../services/userServices');
 
 exports.signup = catchAsync(async (req, res, next) => {
         const { first_name, last_name, email, password } = req.body;
+
+        // Check if the user provided all necessary fields
         if (!first_name || !last_name || !email || !password) return next(new AppError('Kindly reconfirm registration details and try again!', 401));
         const user = new User({
             first_name,
@@ -14,7 +16,9 @@ exports.signup = catchAsync(async (req, res, next) => {
             password
         })
         const newUser = await user.save();
-        const token = jwt.sign({ id: newUser._id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN});
+
+        // Create a token to be sent to the user after saving to the DB
+        const token = service.getToken(newUser._id);
 
         res.status(201).json({
             status: 'success',
