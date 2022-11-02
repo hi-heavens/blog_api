@@ -3,9 +3,12 @@ const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError')
 
-exports.getAllBlogs = catchAsync(async (req, res) => {
-        let query = await Article.find({state: 'published'})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
-        query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
+exports.getAllBlogs = catchAsync(async (req, res, next) => {
+        let query = await Article.find({state: 'published'}).select('-__v').populate('author', {first_name: 1, last_name: 1});
+        
+        // If no details returned in the query, the below error is encountered
+        if (query.length === 0) return next(new AppError('No result returned', 404));
+
         const blogs = await query;
         // console.log(typeof(blogs));
         // let query = await Article.updateMany({state: 'published'}, { $inc: {read_count: 1}});
@@ -31,7 +34,7 @@ exports.getAllBlogs = catchAsync(async (req, res) => {
         });
     });
 
-exports.createBlog = catchAsync(async (req, res) => {
+exports.createBlog = catchAsync(async (req, res, next) => {
         const { title, description, author_id, state, tags, body } = req.body;
         const author = await User.findById(author_id)
 
@@ -55,3 +58,19 @@ exports.createBlog = catchAsync(async (req, res) => {
             }
         })
     });
+
+exports.getBlog = catchAsync(async (req, res, next) => {
+    const blogID = req.query.id;
+    let query = await Article.findOne({blogID}).select('-__v').populate('author', {first_name: 1, last_name: 1});
+        
+    // If no details returned in the query, the below error is encountered
+    if (query.length === 0) return next(new AppError('No result returned', 404));
+
+    const blog = await query;
+    res.status(201).json({
+        status: 'success',
+        data: {
+            user: blog
+        }
+    })
+});
