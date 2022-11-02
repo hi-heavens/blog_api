@@ -4,6 +4,18 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError')
 const service = require('../services/userServices');
 
+exports.protectCreateBlog = catchAsync(async (req, res, next) => {
+    const requestHeader = req.headers.authorization;
+
+    // Verify the token received and confirm the user exist
+    const decode = await service.decodeToken(requestHeader);
+    const loginUser = await User.findById(decode.id);
+    if (!loginUser) {
+        return next(new AppError('The user with the received token does not exist', 401));
+    }
+    next();
+});
+
 exports.signup = catchAsync(async (req, res, next) => {
         const { first_name, last_name, email, password } = req.body;
 

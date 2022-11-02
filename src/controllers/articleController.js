@@ -2,6 +2,7 @@ const Article = require('../models/articleModel');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError')
+const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
         let query = await Article.find({state: 'published'}).select('-__v').populate('author', {first_name: 1, last_name: 1});
@@ -35,7 +36,11 @@ exports.getAllBlogs = catchAsync(async (req, res, next) => {
     });
 
 exports.createBlog = catchAsync(async (req, res, next) => {
-        const { title, description, author_id, state, tags, body } = req.body;
+        const { title, description, state, tags, body } = req.body;
+
+        // Extract author/user id from the token received
+        const author_id = (await service.decodeToken(req.headers.authorization)).id;
+
         const author = await User.findById(author_id)
 
         const blog = new Article({
@@ -47,7 +52,7 @@ exports.createBlog = catchAsync(async (req, res, next) => {
             author: author._id
         })
         const savedBlog = await blog.save();
-        console.log(author);
+
         author.articles = author.articles.concat(savedBlog._id);
         await author.save();
 
