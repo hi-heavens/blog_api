@@ -22,6 +22,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
         res.status(201).json({
             status: 'success',
+            author_id: user._id,
             token,
             data: {
                 user: newUser
@@ -39,7 +40,6 @@ exports.login = catchAsync(async (req, res, next) => {
     let user = await User.findOne({email}).select('+password'); // the select method return the password field with the request
 
     // In the schema, there is a method to compare the provided password with the DB password using bcrypt
-    console.log(user._id)
     if (!user || !(await user.correctPassword(password, user.password))) 
         return next(new AppError('Incorrect email and/or password. Try again!!', 401));
     
@@ -47,6 +47,7 @@ exports.login = catchAsync(async (req, res, next) => {
     const token = service.getToken(user._id);
     res.status(200).json({
         status: 'success',
+        author_id: user._id,
         token,
     })
 });
