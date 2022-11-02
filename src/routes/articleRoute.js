@@ -8,4 +8,6 @@ router.route('/')
 .post(articleController.createBlog)
 .get(articleController.getAllBlogs);
 
+router.route('/:id').get(articleController.getBlog);
+
 module.exports = router;
