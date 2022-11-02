@@ -3,8 +3,8 @@ const User = require('../models/userModel');
 
 exports.getAllBlogs = async (req, res) => {
     try {
-        let query = await Article.find().select('-__v').populate('author', {first_name: 1, last_name: 1});
-        // query = query.select('-__v');
+        let query = await Article.find({state: 'published'})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+        query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
         const blogs = await query;
         // console.log(typeof(blogs));
         // let query = await Article.updateMany({state: 'published'}, { $inc: {read_count: 1}});
@@ -22,6 +22,7 @@ exports.getAllBlogs = async (req, res) => {
         // const article = await query;
         res.status(200).json({
             status: 'success',
+            length: blogs.length,
             // token,
             data: {
                 blogs
