@@ -66,7 +66,7 @@ exports.createBlog = catchAsync(async (req, res, next) => {
 
 exports.getBlog = catchAsync(async (req, res, next) => {
     const blogID = req.query.id;
-    let query = await Article.findOne({blogID}).select('-__v').populate('author', {first_name: 1, last_name: 1});
+    let query = await Article.findByID({blogID}).select('-__v').populate('author', {first_name: 1, last_name: 1});
         
     // If no details returned in the query, the below error is encountered
     if (query.length === 0) return next(new AppError('No result returned', 404));
@@ -116,6 +116,32 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
         length: blogs.length,
         data: {
             blogs
+        }
+    });
+});
+
+
+exports.updateBlog = catchAsync(async (req, res, next) => {
+    const userID = req.user['_id'].toString();
+    const blogID = req.params.id;
+    const blogState = req.body.state;
+
+    if (!(blogState !== 'draft') || !(blogState === 'published')) {
+        return next(new AppError(`Blog state can either be 'published' or 'draft'`, 401));
+    }
+
+    const author = (await Article.findById(blogID));
+
+    if (userID !== author.author.toString()) {
+        return next(new AppError('Only creator of blog can update. Please verify login details', 401));
+    }
+
+    const updatedArticle = await Article.findByIdAndUpdate(blogID, req.body, {new: true});
+
+    res.status(201).json({
+        status: 'success',
+        data: {
+            updatedArticle
         }
     });
 });

@@ -10,6 +10,7 @@ router.post('/create', authController.protectCreateBlog, articleController.creat
 
 router.route('/all').get(articleController.getUserBlogs);
 
-router.route('/:id').get(articleController.getBlog);
+router.route('/:id').get(articleController.getBlog)
+.put(authController.protectCreateBlog, articleController.updateBlog);
 
 module.exports = router;

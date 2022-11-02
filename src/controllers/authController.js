@@ -13,6 +13,7 @@ exports.protectCreateBlog = catchAsync(async (req, res, next) => {
     if (!loginUser) {
         return next(new AppError('The user with the received token does not exist', 401));
     }
+    req.user = loginUser;
     next();
 });
 
