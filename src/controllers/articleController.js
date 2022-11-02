@@ -74,3 +74,43 @@ exports.getBlog = catchAsync(async (req, res, next) => {
         }
     })
 });
+
+exports.getUserBlogs = catchAsync(async (req, res, next) => {
+    const queryObj = {...req.query};
+    const excludedFields = ['page', 'sort', 'limit'];
+    excludedFields.forEach(el => delete queryObj[el]);
+    let query = Article.find(queryObj)//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    if(req.query.sort) {
+        const sortBy = req.query.sort.split(',').join('');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-state') // default sorting
+    }
+
+    // For pagination
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 1;
+    const skip = (page - 1) * limit;
+
+    if (req.query.page) {
+        const collectionCount = await Article.countDocuments();
+        if(skip >= collectionCount) return next(new AppError('This page does not exist', 404));
+    }
+
+    query = query.skip(skip).limit(limit);
+
+    query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
+
+    // If no details returned in the query, the below error is encountered
+    if (query.length === 0) return next(new AppError('No result returned', 404));
+
+    const blogs = await query;
+
+    res.status(200).json({
+        status: 'success',
+        length: blogs.length,
+        data: {
+            blogs
+        }
+    });
+});
