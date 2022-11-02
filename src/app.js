@@ -10,7 +10,6 @@ app.use(express.json());
 
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/blogs', articleRouter);
-app.use('/api/v1/blogs/all', articleRouter);
 
 app.all('*', (req, res, next) => {
     next(new AppError(`The route ${req.originalUrl} does not exist! 💨`, 404));
