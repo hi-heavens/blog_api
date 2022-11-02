@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError')
+const service = require('../services/users');
 
 exports.signup = catchAsync(async (req, res, next) => {
         const { first_name, last_name, email, password } = req.body;
@@ -32,7 +33,16 @@ exports.login = catchAsync(async (req, res, next) => {
 
     // Check if the email exist and the password is correct
     let user = await User.findOne({email}).select('+password'); // the select method return the password field with the request
-    if(!user) return next(new AppError('Incorrect email and/or password. Try again!!', 401));
-    console.log(user);
-    res.status(200).json({status: 'success'})
+
+    // In the schema, there is a method to compare the provided password with the DB password using bcrypt
+    console.log(user._id)
+    if (!user || !(await user.correctPassword(password, user.password))) 
+        return next(new AppError('Incorrect email and/or password. Try again!!', 401));
+    
+    // Send login token to the client
+    const token = service.getToken(user._id);
+    res.status(200).json({
+        status: 'success',
+        token,
+    })
 });
