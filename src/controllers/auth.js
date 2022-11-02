@@ -1,8 +1,8 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const catchAsync = require('../utils/catchAsync');
 
-exports.signup = async (req, res) => {
-    try {
+exports.signup = catchAsync(async (req, res, next) => {
         const { first_name, last_name, email, password } = req.body;
         const user = new User({
             first_name,
@@ -20,10 +20,4 @@ exports.signup = async (req, res) => {
                 user: savedUser
             }
         })
-    } catch (err) {
-        res.status(401).json({
-            status: 'fail',
-            message: err
-        })
-    }
-}
+})
