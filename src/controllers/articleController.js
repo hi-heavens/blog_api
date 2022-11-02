@@ -81,10 +81,14 @@ exports.getBlog = catchAsync(async (req, res, next) => {
 });
 
 exports.getUserBlogs = catchAsync(async (req, res, next) => {
+    const author = req.user['_id'].toString();
+
     const queryObj = {...req.query};
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
-    let query = Article.find(queryObj)//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    
+    let query = Article.find({author})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
         query = query.sort(sortBy);
@@ -94,7 +98,7 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
 
     // For pagination
     const page = req.query.page || 1;
-    const limit = req.query.limit || 1;
+    const limit = req.query.limit || 2;
     const skip = (page - 1) * limit;
 
     if (req.query.page) {
@@ -130,7 +134,7 @@ exports.updateBlog = catchAsync(async (req, res, next) => {
         return next(new AppError(`Blog state can either be 'published' or 'draft'`, 401));
     }
 
-    const author = (await Article.findById(blogID));
+    const author = await Article.findById(blogID);
 
     if (userID !== author.author.toString()) {
         return next(new AppError('Only creator of blog can update. Please verify login details', 401));
