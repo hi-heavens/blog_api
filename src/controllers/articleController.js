@@ -1,7 +1,7 @@
 const Article = require('../models/articleModel');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError')
+const AppError = require('../utils/appError');
 const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
@@ -120,7 +120,7 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     if (req.query.page) {
-        const collectionCount = await Article.countDocuments();
+        const collectionCount = await query.countDocuments();
         if(skip >= collectionCount) return next(new AppError('This page does not exist', 404));
     }
 
@@ -129,7 +129,7 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
     query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
 
     // If no details returned in the query, the below error is encountered
-    if (query.length === 0) return next(new AppError('No result returned', 404));
+    if (!query) return next(new AppError('No result returned', 404));
 
     const blogs = await query;
 
@@ -164,6 +164,27 @@ exports.updateBlog = catchAsync(async (req, res, next) => {
         status: 'success',
         data: {
             updatedArticle
+        }
+    });
+});
+
+exports.deleteBlog = catchAsync(async (req, res, next) => {
+    const userID = req.user['_id'].toString();
+    const blogID = req.params.id;
+
+    const author = await Article.findById(blogID);
+    if(!author) return next(new AppError('The requested blog does not exist', 404));
+
+    if (userID !== author.author.toString()) {
+        return next(new AppError('Blog can only be deleted by owner. Please log in to continue', 401));
+    }
+
+    await Article.deleteOne({_id: blogID});
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            blogID
         }
     });
 });
