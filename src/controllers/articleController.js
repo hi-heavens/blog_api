@@ -5,13 +5,14 @@ const AppError = require('../utils/appError')
 const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
-    let query = await Article.find({state: 'published'})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
-    
+    // query = Article.find({state: 'published'}).exec()
+    // let query = Article.find({state: 'published'}).exec()//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    let query = Article.find({state: { $ne: 'draft' }})//.exec();
     const queryObj = {...req.query};
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
 
-    query = Article.find();
+    // query = Article.find();
 
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
@@ -78,17 +79,21 @@ exports.createBlog = catchAsync(async (req, res, next) => {
     });
 
 exports.getBlog = catchAsync(async (req, res, next) => {
-    const blogID = req.query.id;
-    let query = await Article.findByID({blogID}).select('-__v').populate('author', {first_name: 1, last_name: 1});
-        
-    // If no details returned in the query, the below error is encountered
-    if (query.length === 0) return next(new AppError('No result returned', 404));
-
+    const blogID = req.params.id;
+    // let query = Article.findById(blogID);
+    // let query = Article.findOne({blogID, state: 'published'}).exec();
+    let query = Article.findOneAndUpdate({state: { $ne: 'draft' }, _id: blogID}, {$inc: {read_count: 1}}, {new: true})//.exec();
+    // query = Article.findByIdAndUpdate(blogID, {$inc: {read_count: 1}}, {new: true});
+    
     const blog = await query;
+
+    // If no details returned in the query, the below error is encountered
+    if (!blog) return next(new AppError('No result returned', 404));
+
     res.status(201).json({
         status: 'success',
         data: {
-            user: blog
+            blog
         }
     })
 });
