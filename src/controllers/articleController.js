@@ -5,35 +5,48 @@ const AppError = require('../utils/appError')
 const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
-        let query = await Article.find({state: 'published'}).select('-__v').populate('author', {first_name: 1, last_name: 1});
-        
-        // If no details returned in the query, the below error is encountered
-        if (query.length === 0) return next(new AppError('No result returned', 404));
+    let query = await Article.find({state: 'published'})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    
+    const queryObj = {...req.query};
+    const excludedFields = ['page', 'sort', 'limit'];
+    excludedFields.forEach(el => delete queryObj[el]);
 
-        const blogs = await query;
-        // console.log(typeof(blogs));
-        // let query = await Article.updateMany({state: 'published'}, { $inc: {read_count: 1}});
-        // query = 
-        // query = query.forEach(el => console.log(el[author]));
-        // query = await query.find({author: 'Abdullah Numan'}).exec();
-        // console.log(query[0]['body']);
-        // const blog = await query;
-        // console.log(blog);
-        // query.forEach((el) => {
-        //     console.log(el['read_count']);
-        // })
-        // console.log(query[0].read_count);
+    query = Article.find();
 
-        // const article = await query;
-        res.status(200).json({
-            status: 'success',
-            length: blogs.length,
-            // token,
-            data: {
-                blogs
-            }
-        });
+    if(req.query.sort) {
+        const sortBy = req.query.sort.split(',').join('');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-timestamp') // default sorting
+    }
+
+    // For pagination
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 20;
+    const skip = (page - 1) * limit;
+
+    if (req.query.page) {
+        const collectionCount = await Article.countDocuments();
+        if(skip >= collectionCount) return next(new AppError('This page does not exist', 404));
+    }
+
+    query = query.skip(skip).limit(limit);
+
+    query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
+
+    // If no details returned in the query, the below error is encountered
+    if (query.length === 0) return next(new AppError('No result returned', 404));
+
+    const blogs = await query;
+
+    res.status(200).json({
+        status: 'success',
+        length: blogs.length,
+        data: {
+            blogs
+        }
     });
+});
 
 exports.createBlog = catchAsync(async (req, res, next) => {
         const { title, description, state, tags, body } = req.body;
@@ -87,13 +100,13 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
     
-    let query = Article.find({author})//.select('-__v').populate('author', {first_name: 1, last_name: 1});
+    let query = Article.find({author});
     
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
         query = query.sort(sortBy);
     } else {
-        query = query.sort('-state') // default sorting
+        query = query.sort('-timestamp') // default sorting
     }
 
     // For pagination
