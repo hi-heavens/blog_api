@@ -42,10 +42,19 @@ const getReadingTime = (body) => {
 
 // const readCount = () => this.read_count + 1;
 
-articleSchema.pre('save', function(next) {
-    this.reading_time = getReadingTime(this.body);
-    this.read_count + 1;
-    next();
+// articleSchema.pre('save', function(next) {
+//     this.reading_time = getReadingTime(this.body);
+//     this.read_count + 1;
+//     next();
+// });
+
+articleSchema.pre('deleteOne', function (next) {
+    const articleId = this.getQuery()["_id"];
+    // mongoose.model("User").deleteOne({'articles': articleId}, function (err, result) {
+    mongoose.model("User").updateOne({ $pullAll: {articles: [articleId]}}, function (err, result) {
+      if (err) next(err);
+      else next();
+    });
 });
 
 const Article = mongoose.model('Article', articleSchema);
