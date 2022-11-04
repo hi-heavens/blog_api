@@ -5,14 +5,13 @@ const AppError = require('../utils/appError');
 const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
-    // query = Article.find({state: 'published'}).exec()
-    // let query = Article.find({state: 'published'}).exec()//.select('-__v').populate('author', {first_name: 1, last_name: 1});
-    let query = Article.find({state: { $ne: 'draft' }})//.exec();
+    let query = Article.find({state: 'published'})//.exec();
     const queryObj = {...req.query};
+
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
 
-    // query = Article.find();
+    query = query.find(queryObj);
 
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
@@ -35,10 +34,10 @@ exports.getAllBlogs = catchAsync(async (req, res, next) => {
 
     query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
 
-    // If no details returned in the query, the below error is encountered
-    if (query.length === 0) return next(new AppError('No result returned', 404));
-
     const blogs = await query;
+
+    // If no details returned in the query, the below error is encountered
+    if (blogs.length === 0) return next(new AppError('No result returned', 404));
 
     res.status(200).json({
         status: 'success',
@@ -68,6 +67,7 @@ exports.createBlog = catchAsync(async (req, res, next) => {
         const savedBlog = await blog.save();
 
         author.articles = author.articles.concat(savedBlog._id);
+
         await author.save();
 
         res.status(201).json({
@@ -128,10 +128,10 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
 
     query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
 
-    // If no details returned in the query, the below error is encountered
-    if (!query) return next(new AppError('No result returned', 404));
-
     const blogs = await query;
+
+    // If no details returned in the query, the below error is encountered
+    if (!blogs) return next(new AppError('No result returned', 404));
 
     res.status(200).json({
         status: 'success',
