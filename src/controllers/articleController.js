@@ -80,17 +80,15 @@ exports.createBlog = catchAsync(async (req, res, next) => {
 
 exports.getBlog = catchAsync(async (req, res, next) => {
     const blogID = req.params.id;
-    // let query = Article.findById(blogID);
-    // let query = Article.findOne({blogID, state: 'published'}).exec();
+
     let query = Article.findOneAndUpdate({state: { $ne: 'draft' }, _id: blogID}, {$inc: {read_count: 1}}, {new: true})//.exec();
-    // query = Article.findByIdAndUpdate(blogID, {$inc: {read_count: 1}}, {new: true});
     
     const blog = await query;
 
     // If no details returned in the query, the below error is encountered
     if (!blog) return next(new AppError('No result returned', 404));
 
-    res.status(201).json({
+    res.status(200).json({
         status: 'success',
         data: {
             blog
@@ -104,8 +102,10 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
     const queryObj = {...req.query};
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
-    
+
     let query = Article.find({author});
+
+    query = query.find(queryObj);
     
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
@@ -116,7 +116,7 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
 
     // For pagination
     const page = req.query.page || 1;
-    const limit = req.query.limit || 2;
+    const limit = req.query.limit || 20;
     const skip = (page - 1) * limit;
 
     if (req.query.page) {
@@ -148,19 +148,25 @@ exports.updateBlog = catchAsync(async (req, res, next) => {
     const blogID = req.params.id;
     const blogState = req.body.state;
 
-    if (!(blogState !== 'draft') || !(blogState === 'published')) {
-        return next(new AppError(`Blog state can either be 'published' or 'draft'`, 401));
-    }
+    const reqBody = req.body;
+    const excludedFields = ['read_count', 'author', '_id'];
+    excludedFields.forEach(el => delete reqBody[el]);
 
     const author = await Article.findById(blogID);
-
+    
     if (userID !== author.author.toString()) {
         return next(new AppError('Only creator of blog can update. Please verify login details', 401));
     }
 
-    const updatedArticle = await Article.findByIdAndUpdate(blogID, req.body, {new: true});
+    if(blogState){
+        if (blogState !== "draft" && blogState !== "published") {
+            return next(new AppError(`Blog state can either be 'published' or 'draft'`, 401));
+        }
+    }
 
-    res.status(201).json({
+    const updatedArticle = await Article.findByIdAndUpdate(blogID, reqBody, {new: true});
+
+    res.status(200).json({
         status: 'success',
         data: {
             updatedArticle

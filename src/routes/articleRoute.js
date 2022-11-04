@@ -10,8 +10,8 @@ router.post('/create', authController.protectCreateBlog, articleController.creat
 
 router.route('/all').get(authController.protectCreateBlog, articleController.getUserBlogs);
 
-router.route('/:id').get(articleController.getBlog)
-.put(authController.protectCreateBlog, articleController.updateBlog)
-.delete(authController.protectCreateBlog, articleController.deleteBlog);
+router.get('/:id', articleController.getBlog)
+router.put('/:id', authController.protectCreateBlog, articleController.updateBlog)
+router.delete('/:id', authController.protectCreateBlog, articleController.deleteBlog);
 
 module.exports = router;
