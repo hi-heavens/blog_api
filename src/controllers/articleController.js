@@ -5,20 +5,18 @@ const AppError = require('../utils/appError');
 const service = require('../services/userServices');
 
 exports.getAllBlogs = catchAsync(async (req, res, next) => {
-    // query = Article.find({state: 'published'}).exec()
-    // let query = Article.find({state: 'published'}).exec()//.select('-__v').populate('author', {first_name: 1, last_name: 1});
     let query = Article.find({state: { $ne: 'draft' }})//.exec();
     const queryObj = {...req.query};
     const excludedFields = ['page', 'sort', 'limit'];
     excludedFields.forEach(el => delete queryObj[el]);
 
-    // query = Article.find();
+    query = query.find(queryObj);
 
     if(req.query.sort) {
         const sortBy = req.query.sort.split(',').join('');
         query = query.sort(sortBy);
     } else {
-        query = query.sort('-timestamp') // default sorting
+        query = query.sort('-read_count -reading_time -timestamp') // default sorting
     }
 
     // For pagination
@@ -83,6 +81,8 @@ exports.getBlog = catchAsync(async (req, res, next) => {
 
     let query = Article.findOneAndUpdate({state: { $ne: 'draft' }, _id: blogID}, {$inc: {read_count: 1}}, {new: true})//.exec();
     
+    query = query.select('-__v').populate('author', {first_name: 1, last_name: 1});
+
     const blog = await query;
 
     // If no details returned in the query, the below error is encountered
@@ -142,20 +142,21 @@ exports.getUserBlogs = catchAsync(async (req, res, next) => {
     });
 });
 
-
 exports.updateBlog = catchAsync(async (req, res, next) => {
     const userID = req.user['_id'].toString();
     const blogID = req.params.id;
     const blogState = req.body.state;
-
     const reqBody = req.body;
+
     const excludedFields = ['read_count', 'author', '_id'];
     excludedFields.forEach(el => delete reqBody[el]);
-
+    
     const author = await Article.findById(blogID);
+
+    if (!author) return next(new AppError('Invalid Blog ID provided', 400));
     
     if (userID !== author.author.toString()) {
-        return next(new AppError('Only creator of blog can update. Please verify login details', 401));
+        return next(new AppError('You are not authorized to update this blog', 401));
     }
 
     if(blogState){

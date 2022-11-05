@@ -17,7 +17,7 @@ const articleSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    reading_time: Number,
+    reading_time: String,
     tags: [String],
     body: {
         type: String,
@@ -25,7 +25,7 @@ const articleSchema = new mongoose.Schema({
     },
     timestamp: {
         type: Date,
-        default: Date.now() 
+        default: new Date().toISOString(),
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
@@ -37,20 +37,17 @@ const getReadingTime = (body) => {
     const wordsPerMinute = 225;
     const numberOfWords = body.trim().split(/\s/g).length;
     const readingTime = Math.ceil(numberOfWords / wordsPerMinute);
-    return readingTime;
+    return `${readingTime} min(s) read`;
 };
 
-// const readCount = () => this.read_count + 1;
-
-// articleSchema.pre('save', function(next) {
-//     this.reading_time = getReadingTime(this.body);
-//     this.read_count + 1;
-//     next();
-// });
+articleSchema.pre('save', function(next) {
+    this.reading_time = getReadingTime(this.body);
+    this.read_count + 1;
+    next();
+});
 
 articleSchema.pre('deleteOne', function (next) {
     const articleId = this.getQuery()["_id"];
-    // mongoose.model("User").deleteOne({'articles': articleId}, function (err, result) {
     mongoose.model("User").updateOne({ $pullAll: {articles: [articleId]}}, function (err, result) {
       if (err) next(err);
       else next();
