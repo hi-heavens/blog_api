@@ -9,20 +9,54 @@
   <body>
     <h1>The Blogging API</h1>
     <p>
-      This is a simple API for a blog. It has the following endpoints:
+      The general idea here is that the API has a general endpoint that shows a
+      list of articles that have been created by different people, and anybody
+      that calling this endpoint should be able to read a blog created by them
+      or other users.
+    </p>
+    <p>
+      To see the sample requests, please access the Postman documentation
+      <a href="https://documenter.getpostman.com/view/22961306/2s8YYFs47Y"
+        >HERE</a
+      >
     </p>
     <ul>
+      <li>
+        <a href="/api/v1/user/signup">/api/v1/user/signup</a> - Send a POST
+        request to register a user
+      </li>
+      <li>
+        <a href="/api/v1/user/login">/api/v1/user/login</a> - Send a POST
+        request to register a user
+      </li>
       <li>
         <a href="/api/v1/blogs">/api/v1/blogs</a> - Returns all blog posts
       </li>
       <li>
-        <a href="/api/posts/1">/api/posts/:id</a> - Returns a single post
+        <a href="/api/v1/blogs/create">/api/v1/blogs/create</a> - Send a POST
+        request to create a blog post
       </li>
       <li>
-        <a href="/api/posts/1/comments">/api/posts/:id/comments</a> - Returns
-        all comments for a single post
+        <a href="/api/v1/blogs/all">/api/v1/blogs/all</a> - Returns all blog
+        posts for a login user
       </li>
-      </ul>
-      <p>You can view the Postman documentation <a href="https://documenter.getpostman.com/view/22961306/2s8YYFs47Y">HERE</a></p>
+      <li>
+        <a href="/api/v1/blogs/:id">/api/v1/blogs/:id</a> - Returns a blog post
+        with the provided ID
+      </li>
+      <li>
+        <a href="/api/v1/blogs/:id">/api/v1/blogs/:id</a> - When a PUT request
+        is sent, a login user can update a blog post with the ID provided
+      </li>
+      <li>
+        <a href="/api/v1/blogs/:id">/api/v1/blogs/:id</a> - When a DELETE
+        request is sent, a login user can delete a blog post with the ID
+        provided
+      </li>
+    </ul>
+    <p>
+      A token will be provided upon logging in successfully or successful user
+      creation
+    </p>
   </body>
 </html>
