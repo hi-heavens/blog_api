@@ -4,7 +4,7 @@
   "description": "This is a blogging API based on an assignment from Altschool",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --forceExit",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
@@ -26,5 +26,9 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.7.0",
     "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "jest": "^29.2.2",
+    "supertest": "^6.3.1"
   }
 }
