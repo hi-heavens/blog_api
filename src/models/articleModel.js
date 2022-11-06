@@ -7,7 +7,6 @@ const articleSchema = new mongoose.Schema({
         unique: true,
     },
     description: String,
-    author: String,
     state: {
         type: String,
         enum: ['draft', 'published'],
