@@ -37,7 +37,7 @@ This is an API for a blogging app
 
 ---
 ## Base URL
-- https://stark-oasis-55413.herokuapp.com/
+- https://blog-api-cbjp.onrender.com/
 
 ## Models
 ---
