@@ -23,6 +23,7 @@
     "compression": "^1.7.4",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "joi": "^17.7.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.7.0",
     "validator": "^13.7.0"
